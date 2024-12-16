@@ -11,13 +11,9 @@
 #ifndef LIBSDPXX_SESSION_DESCRIPTION_HH
 #define LIBSDPXX_SESSION_DESCRIPTION_HH
 
-#include <string>
 #include <variant>
 #include <vector>
-#include <iostream>
 
-#include "config.hh"
-#include "constants.hh"
 #include "sdp_field_unknown.hh"
 
 namespace libsdpxx {
@@ -50,7 +46,7 @@ public:
    *  @param unknown
    *  The unknown field value.
    */
-  sdp_field_variant(sdp_field_unknown const unknown) noexcept
+  sdp_field_variant(const sdp_field_unknown& unknown) noexcept
       : field_type_(sdp_field_type::unknown)
       , field_(unknown) {}
 
@@ -58,23 +54,16 @@ public:
    *  @abstract
    *  Get the SDP field type.
    */
+  LIBSDPXX_NODISCARD
   sdp_field_type get_field_type() const noexcept { return field_type_; }
 
   /*!
    *  @abstract
    *  Get the unknown field variant.
    */
-  std::optional<sdp_field_unknown> get_unknown_field() const noexcept {
-    return get<sdp_field_unknown>(sdp_field_type::unknown);
-  }
-
-private:
-  template <typename T> const std::optional<T> get(sdp_field_type field_type) const noexcept {
-    if (field_type_ == field_type) {
-      return std::get<T>(field_);
-    } else {
-      return std::nullopt;
-    }
+  LIBSDPXX_NODISCARD
+  sdp_field_unknown get_unknown_field() const noexcept {
+    return std::get<sdp_field_unknown>(field_);
   }
 
 private:
@@ -84,15 +73,16 @@ private:
 
 class session_description {
 public:
-  session_description(const std::vector<sdp_field_variant> fields) noexcept
+  session_description(const std::vector<sdp_field_variant>& fields) noexcept
       : fields_(fields) {}
 
+  LIBSDPXX_NODISCARD
   std::vector<sdp_field_variant> get_fields() const noexcept {
     return fields_;
   }
 
 private:
-  const std::vector<sdp_field_variant> fields_;
+  std::vector<sdp_field_variant> fields_;
 };
 
 } // namespace libsdpxx

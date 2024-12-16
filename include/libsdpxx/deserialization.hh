@@ -11,13 +11,11 @@
 #ifndef LIBSDPXX_DESERIALIZATION_HH
 #define LIBSDPXX_DESERIALIZATION_HH
 
-#include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <vector>
 
 #include "config.hh"
-#include "expected.hh"
+#include "parse_error.hh"
 #include "string_utils.hh"
 #include "session_description.hh"
 
@@ -26,7 +24,7 @@ namespace internal {
 
 template <typename F>
 LIBSDPXX_PRIVATE
-bool push_back(std::vector<sdp_field_variant> &sdp_fields, expected<F> const &field) {
+bool push_back(std::vector<sdp_field_variant>& sdp_fields, const error_or<F>& field) noexcept {
   if (field.has_value()) {
     sdp_fields.push_back(field.value());
     return true;
@@ -36,9 +34,7 @@ bool push_back(std::vector<sdp_field_variant> &sdp_fields, expected<F> const &fi
 }
 
 LIBSDPXX_PRIVATE
-sdp_field_type line_type(std::string_view const &line) {
-  assert((line.size() > 0 && "Size of line must be grater than 0"));
-
+sdp_field_type line_type(const std::string_view& line) noexcept {
   switch (line[0]) {
     case constants::sdp_line_type_protocol_version:
       return sdp_field_type::protocol_version;
@@ -75,24 +71,38 @@ sdp_field_type line_type(std::string_view const &line) {
   }
 }
 
-LIBSDPXX_PRIVATE
-expected<sdp_field_unknown> deserialize_unknown(std::string_view const & line) {
-  return sdp_field_unknown{std::string{line[0]}, std::string{line.substr(constants::line_prefix_size)}};
+LIBSDPXX_INLINE
+std::string_view line_value(const std::string_view& line) noexcept {
+  return line.substr(constants::line_prefix_size);
+}
+
+LIBSDPXX_INLINE
+bool is_valid_line(const std::string_view& line) noexcept {
+  return line.size() > constants::line_prefix_size &&
+         line[1] == constants::equals;
 }
 
 LIBSDPXX_PRIVATE
-std::vector<sdp_field_variant> deserialize(std::string_view sdp) noexcept {
+error_or<sdp_field_unknown> deserialize_unknown(const std::string_view& line) noexcept {
+  return sdp_field_unknown{std::string{line[0]}, std::string{line_value(line)}};
+}
+
+LIBSDPXX_PRIVATE
+std::vector<sdp_field_variant> deserialize(const std::string_view& sdp) noexcept {
   std::vector<sdp_field_variant> fields;
   size_t pos = 0;
   std::optional<std::string_view> line;
-  while ((line = next_line(sdp, &pos)).has_value()) {
-    if (line->size() < constants::line_prefix_size)
+  while ((line = next_line(sdp, pos)).has_value()) {
+    if (!is_valid_line(*line)) {
       continue;
+    }
 
     switch (line_type(*line)) {
-      default:
+      case sdp_field_type::unknown:
         push_back(fields, deserialize_unknown(*line));
-        continue;
+        break;
+      default:
+        std::abort();
     }
   }
   return fields;
@@ -101,8 +111,8 @@ std::vector<sdp_field_variant> deserialize(std::string_view sdp) noexcept {
 } // namespace internal
 
 LIBSDPXX_EXPORT
-session_description deserialize(std::string const sdp) noexcept {
-  return internal::deserialize(sdp);
+session_description deserialize(const std::string& sdp) noexcept {
+  return session_description{internal::deserialize(sdp)};
 }
 
 } // namespace libsdpxx

@@ -11,8 +11,18 @@
 #ifndef LIBSDPXX_CONFIG_HH
 #define LIBSDPXX_CONFIG_HH
 
+#if __cplusplus > 201402L
+#define LIBSDPXX_CXX17
+#endif
+
 #define LIBSDPXX_EXPORT __attribute__((visibility("default")))
 #define LIBSDPXX_PRIVATE __attribute__((visibility("hidden")))
 #define LIBSDPXX_INLINE inline
+
+#ifdef LIBSDPXX_CXX17
+#define LIBSDPXX_NODISCARD [[nodiscard]]
+#else
+#define LIBSDPXX_NODISCARD
+#endif
 
 #endif /* LIBSDPXX_CONFIG_HH */

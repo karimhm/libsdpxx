@@ -11,35 +11,36 @@
 #ifndef LIBSDPXX_SERIALIZATION_HH
 #define LIBSDPXX_SERIALIZATION_HH
 
-#include <algorithm>
-#include <cctype>
 #include <sstream>
 #include <vector>
 
 #include "config.hh"
+#include "constants.hh"
 #include "session_description.hh"
 
 namespace libsdpxx {
 namespace internal {
 
 LIBSDPXX_PRIVATE
-void serialize_unknown(sdp_field_unknown const & unknown, std::ostringstream & os) {
+void serialize(const sdp_field_unknown& unknown, std::ostringstream& os) noexcept {
   os << unknown.get_type()
      << constants::equals
-     << unknown.get_value()
-     << constants::newline;
+     << unknown.get_value();
 }
 
 LIBSDPXX_PRIVATE
-std::string serialize(session_description const & session_description) noexcept {
+std::string serialize(const session_description& session_description) noexcept {
   std::ostringstream os;
 
-  for (const auto field : session_description.get_fields()) {
+  for (const auto& field : session_description.get_fields()) {
     switch (field.get_field_type()) {
+      case sdp_field_type::unknown:
+        serialize(field.get_unknown_field(), os);
+        break;
       default:
-        serialize_unknown(*field.get_unknown_field(), os);
-        continue;
+        std::abort();
     }
+    os << constants::newline;
   }
 
   return os.str();
@@ -48,7 +49,7 @@ std::string serialize(session_description const & session_description) noexcept 
 } // namespace internal
 
 LIBSDPXX_EXPORT
-std::string serialize(session_description const & session_description) noexcept {
+std::string serialize(const session_description& session_description) noexcept {
   return internal::serialize(session_description);
 }
 
