@@ -12,6 +12,7 @@
 #define LIBSDPXX_SDP_FIELD_UNKNOWN_HH
 
 #include <string>
+#include <utility>
 
 namespace libsdpxx {
 
@@ -22,30 +23,32 @@ public:
    *  Construct an unknown SDP field.
    *
    *  @param type
-   *  The raw SDP field.
+   *  The raw SDP field type.
    *
    *  @param value
    *  The raw SDP value.
    */
   sdp_field_unknown(std::string type, std::string value) noexcept
-    : type_(type)
-    , value_(value) {}
+    : type_(std::move(type))
+    , value_(std::move(value)) {}
 
   /*!
    *  @abstract
    *  Get the raw SDP type.
    */
+  LIBSDPXX_NODISCARD
   std::string get_type() const noexcept { return type_; }
 
   /*!
    *  @abstract
    *  Get the raw SDP value.
    */
+  LIBSDPXX_NODISCARD
   std::string get_value() const noexcept { return value_; }
 
 private:
-  const std::string type_;
-  const std::string value_;
+  std::string type_;
+  std::string value_;
 };
 
 } // namespace libsdpxx

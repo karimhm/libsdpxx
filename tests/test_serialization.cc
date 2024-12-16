@@ -14,7 +14,7 @@
 using namespace libsdpxx;
 
 TEST(libsdpxx_tests, serialize_unknown_field) {
-  const sdp_field_unknown unknown = {"y", "0"};
-  const session_description session_description = {{unknown}};
+  const auto field = sdp_field_unknown{"y", "0"};
+  const session_description session_description = {{field}};
   EXPECT_EQ("y=0\r\n", serialize(session_description));
 }

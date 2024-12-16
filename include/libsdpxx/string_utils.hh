@@ -13,7 +13,6 @@
 
 #include <optional>
 #include <string>
-#include <vector>
 
 #include "config.hh"
 #include "constants.hh"
@@ -22,19 +21,19 @@ namespace libsdpxx {
 namespace internal {
 
 LIBSDPXX_INLINE
-std::optional<std::string_view> next_line(const std::string_view str, size_t* pos) {
-  if (pos == nullptr || *pos >= str.size()) {
+std::optional<std::string_view> next_line(const std::string_view& str, size_t& pos) noexcept {
+  if (pos >= str.size()) {
     return std::nullopt;
   }
-  size_t line_back = str.find(constants::lf, *pos);
+  const size_t line_back = str.find(constants::lf, pos);
   if (line_back == std::string_view::npos) {
     return std::nullopt;
   }
-  std::string_view line = str.substr(*pos, line_back - *pos);
+  std::string_view line = str.substr(pos, line_back - pos);
   if (!line.empty() && line.back() == constants::cr) {
     line.remove_suffix(1);
   }
-  *pos = line_back + 1;
+  pos = line_back + 1;
   return line;
 }
 
