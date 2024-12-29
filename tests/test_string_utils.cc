@@ -20,6 +20,12 @@ TEST(libsdpxx_tests, next_line_empty) {
   EXPECT_EQ(0, pos);
 }
 
+TEST(libsdpxx_tests, next_line_no_crlf) {
+  size_t pos = 0;
+  EXPECT_EQ(std::nullopt, next_line("v=1", pos));
+  EXPECT_EQ(0, pos);
+}
+
 TEST(libsdpxx_tests, next_line_single) {
   const std::string line = "v=0\r\n";
   size_t pos = 0;
@@ -55,4 +61,24 @@ TEST(libsdpxx_tests, next_line_multiple_no_cr) {
   EXPECT_EQ("a=1", next_line(line, pos));
   EXPECT_EQ(8, pos);
   EXPECT_EQ(std::nullopt, next_line(line, pos));
+}
+
+TEST(libsdpxx_tests, format_empty) {
+  EXPECT_EQ("", format(""));
+}
+
+TEST(libsdpxx_tests, format_no_params) {
+  EXPECT_EQ("static", format("static"));
+}
+
+TEST(libsdpxx_tests, format_with_string_param) {
+  EXPECT_EQ("static param", format("static %s", "param"));
+}
+
+TEST(libsdpxx_tests, format_with_string_param_only) {
+  EXPECT_EQ("param", format("%s", "param"));
+}
+
+TEST(libsdpxx_tests, format_with_multiple_params) {
+  EXPECT_EQ("static param c 1 2.0", format("static %s %c %i %.1f", "param", 'c', 1, 2.0));
 }

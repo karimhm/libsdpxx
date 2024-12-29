@@ -25,4 +25,6 @@
 #define LIBSDPXX_NODISCARD
 #endif
 
+#define LIBSDPXX_PRINTFLIKE(fmt, args) __attribute__((format(printf, fmt, args)))
+
 #endif /* LIBSDPXX_CONFIG_HH */

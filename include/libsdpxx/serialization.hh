@@ -29,11 +29,21 @@ void serialize(const sdp_field_unknown& unknown, std::ostringstream& os) noexcep
 }
 
 LIBSDPXX_PRIVATE
+void serialize(const sdp_field_protocol_version& protocol_version, std::ostringstream& os) {
+  os << constants::sdp_line_type_protocol_version
+     << constants::equals
+     << std::to_string(protocol_version.get_version());
+}
+
+LIBSDPXX_PRIVATE
 std::string serialize(const session_description& session_description) noexcept {
   std::ostringstream os;
 
   for (const auto& field : session_description.get_fields()) {
     switch (field.get_field_type()) {
+      case sdp_field_type::protocol_version:
+        serialize(field.get_protocol_version_field(), os);
+        break;
       case sdp_field_type::unknown:
         serialize(field.get_unknown_field(), os);
         break;

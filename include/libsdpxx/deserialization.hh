@@ -88,6 +88,20 @@ error_or<sdp_field_unknown> deserialize_unknown(const std::string_view& line) no
 }
 
 LIBSDPXX_PRIVATE
+error_or<sdp_field_protocol_version>
+deserialize_protocol_version(const std::string_view &line) {
+  const auto value = std::string{line_value(line)};
+  try {
+    // v=<version>
+    return sdp_field_protocol_version{std::stoll(value)};
+  } catch (std::invalid_argument const& ex) {
+    return parse_error{line, format("Invalid protocol version \"%s\". %s", value.c_str(), ex.what())};
+  } catch (std::out_of_range const& ex) {
+    return parse_error{line, format("Protocol version too large \"%s\". %s", value.c_str(), ex.what())};
+  }
+}
+
+LIBSDPXX_PRIVATE
 std::vector<sdp_field_variant> deserialize(const std::string_view& sdp) noexcept {
   std::vector<sdp_field_variant> fields;
   size_t pos = 0;
@@ -98,6 +112,9 @@ std::vector<sdp_field_variant> deserialize(const std::string_view& sdp) noexcept
     }
 
     switch (line_type(*line)) {
+      case sdp_field_type::protocol_version:
+        push_back(fields, deserialize_protocol_version(*line));
+        break;
       case sdp_field_type::unknown:
         push_back(fields, deserialize_unknown(*line));
         break;

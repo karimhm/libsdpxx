@@ -15,6 +15,7 @@
 #include <vector>
 
 #include "sdp_field_unknown.hh"
+#include "sdp_field_protocol_version.hh"
 
 namespace libsdpxx {
 
@@ -52,6 +53,17 @@ public:
 
   /*!
    *  @abstract
+   *  Construct a Protocol Version SDP field variant.
+   *
+   *  @param protocol_version
+   *  The protocol version field value.
+   */
+  sdp_field_variant(const sdp_field_protocol_version& protocol_version) noexcept
+      : field_type_(sdp_field_type::protocol_version)
+      , field_(protocol_version) {}
+
+  /*!
+   *  @abstract
    *  Get the SDP field type.
    */
   LIBSDPXX_NODISCARD
@@ -66,9 +78,21 @@ public:
     return std::get<sdp_field_unknown>(field_);
   }
 
+  /*!
+   *  @abstract
+   *  Get the protocol version field.
+   */
+  LIBSDPXX_NODISCARD
+  sdp_field_protocol_version get_protocol_version_field() const noexcept {
+    return std::get<sdp_field_protocol_version>(field_);
+  }
+
 private:
   sdp_field_type field_type_;
-  std::variant<sdp_field_unknown> field_;
+  std::variant<
+    sdp_field_unknown,
+    sdp_field_protocol_version
+  > field_;
 };
 
 class session_description {
