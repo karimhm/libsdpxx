@@ -17,25 +17,32 @@
 
 namespace libsdpxx {
 
+class parse_error;
+
+template <class T>
+using error_or = tl::expected<T, parse_error>;
+
 class parse_error final : public std::runtime_error {
 public:
-  parse_error(std::string line, const std::string& what)
+  parse_error(std::string line, const std::string& what) noexcept
     : std::runtime_error(what)
     , line_(std::move(line)) {}
 
-  parse_error(const std::string_view& line, const std::string& what)
+  parse_error(const std::string_view& line, const std::string& what) noexcept
     : std::runtime_error(what)
     , line_(std::string{line}) {}
 
   LIBSDPXX_NODISCARD
   std::string line() const noexcept { return line_; }
 
+  template<typename T>
+  constexpr operator error_or<T>() const noexcept {
+    return tl::unexpected(*this);
+  }
+
 private:
   std::string line_;
 };
-
-template <class T>
-using error_or = tl::expected<T, parse_error>;
 
 } // namespace libsdpxx
 

@@ -54,3 +54,32 @@ TEST(libsdpxx_tests, is_valid_line) {
   EXPECT_TRUE(is_valid_line("s= "));
   EXPECT_FALSE(is_valid_line("s="));
 }
+
+TEST(libsdpxx_tests, push_back_field) {
+  const error_or<sdp_field_variant> field = sdp_field_unknown("v", "0");
+  std::vector<sdp_field_variant> sdp_fields;
+  EXPECT_TRUE(push_back(sdp_fields, field));
+  EXPECT_EQ(1, sdp_fields.size());
+}
+
+TEST(libsdpxx_tests, push_back_error) {
+  std::vector<sdp_field_variant> sdp_fields;
+  const error_or<sdp_field_variant> field = parse_error{std::string{"v=0"}, "error"};
+  EXPECT_FALSE(push_back(sdp_fields, field));
+  EXPECT_EQ(0, sdp_fields.size());
+}
+
+TEST(libsdpxx_tests, deserialize_protocol_version_line) {
+  const auto protocol_version = deserialize_protocol_version("v=0");
+  EXPECT_EQ(0, protocol_version.value().get_version());
+}
+
+TEST(libsdpxx_tests, deserialize_bad_protocol_version_line) {
+  const auto protocol_version = deserialize_protocol_version("v=a");
+  EXPECT_FALSE(protocol_version.has_value());
+}
+
+TEST(libsdpxx_tests, deserialize_too_large_protocol_version_line) {
+  const auto protocol_version = deserialize_protocol_version("v=99999999999999999999");
+  EXPECT_FALSE(protocol_version.has_value());
+}

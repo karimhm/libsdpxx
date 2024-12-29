@@ -37,6 +37,23 @@ std::optional<std::string_view> next_line(const std::string_view& str, size_t& p
   return line;
 }
 
+LIBSDPXX_PRIVATE
+LIBSDPXX_PRINTFLIKE(1, 2)
+static std::string format(const char* format, ...) noexcept {
+  va_list args;
+  va_start(args, format);
+  const size_t size = std::vsnprintf(nullptr, 0, format, args) + 1; // +1 for null terminator
+  va_end(args);
+  if(size <= 0) {
+    return "{{Error during formatting. std::vsnprintf failed}}";
+  }
+  auto buffer = std::vector<char>(size);
+  va_start(args, format);
+  std::vsnprintf(buffer.data(), size, format, args);
+  va_end(args);
+  return {buffer.data(), buffer.data() + size - 1}; // -1 to exclude the null terminator
+}
+
 } // namespace internal
 } // namespace libsdpxx
 
