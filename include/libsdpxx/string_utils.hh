@@ -11,6 +11,7 @@
 #ifndef LIBSDPXX_BASE_STRING_UTILS_HH
 #define LIBSDPXX_BASE_STRING_UTILS_HH
 
+#include <cstdarg>
 #include <optional>
 #include <string>
 
